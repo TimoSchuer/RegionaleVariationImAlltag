@@ -82,6 +82,12 @@ stringr::str_remove_all(Annotated$Text, "\\W") %>%
 Annotated <- cbind(Annotated, PoSLemma[,2:3])
 
 ```
+Corpus und Annotated als CSV speichern für Reproduktion
+```{r}
+write.csv(Corpus, file= "Corpus.csv", sep = ";")
+write.csv(Annotated, file= "Annotated.csv", sep = ";")
+```
+
 Belege für g im Morphem- und Wortauslaut auswählen
 ```{r}
 V5 <- filter(Annotated, Variable=="V05")
@@ -107,7 +113,30 @@ V5LDAScal <- as.data.frame(V5SumMa4LDA$scaling)
 V5LDAScal[,3] <-V5LDAScal$LD1- V5LDAScal$LD2
 
 ```
-
+Merge Tags by IP
+```{r}
+# Merge Tags
+V5TagMerge <- V5
+remove(k)
+V5TagMerge$tag <-as.character(V5TagMerge$tag)
+V5TagMerge$lemma <- as.character(V5TagMerge$lemma)
+for (k in nrow(V5TagMerge):2) {
+  if((V5TagMerge[k,1]==V5TagMerge[k-1,1])){
+    if(V5TagMerge$tag[k] != V5TagMerge$tag[k-1]){
+    V5TagMerge$tag[k-1] <- stringr::str_c(V5TagMerge$tag[k-1],V5TagMerge$tag[k], sep = ":")
+    V5TagMerge$lemma[k-1] <- stringr::str_c(V5TagMerge$lemma[k-1],V5TagMerge$lemma[k], sep = ":")
+    
+    }
+    V5TagMerge <- V5TagMerge[-k,]
+  }else{
+    next()
+  }
+  
+}
+V5TagMerge$tag <-as.factor(V5TagMerge$tag)
+V5TagMerge$lemma <-as.factor(V5TagMerge$lemma)
+#V5IpTag <- cbind(SortIpV5,V5TagMerge$tag,V5TagMerge$lemma)
+```
 Plot Kookkurrenz über Situationen hinweg
 ```{r}
 SortIpNA <- sort_by_unit(exb=Corpus, drop = TRUE)
@@ -122,7 +151,22 @@ for (p in 1:ncol(SortIpNA)) {
 SortIpV5 <- com_clust(SortIpV5, variables = c(16:38))
 SortIpV5 <- SortIpV5[[1]]
 ```
+LDA coocurrence Global
 
+```{r}
+# Vars <- colnames(AnalyseV5)
+# AnalyseV5 <- V5[,which(colSums(AnalyseV5)>0)]
+SortIpV5[is.na(SortIpV5)] <- 0 #NA durch 0 ersetzen
+#Vars <- colnames(SortIpV5)
+#f <- paste(Vars[39], "~", paste(Vars[-c(1:2,5:15,39)], collapse=" + "))
+#corV5 <- cor(AnalyseV5[,-c(13,16:17,22:24,35,36)])
+#V5LDA <- lda(as.formula(paste(f)),data=SortIpV5, prior=c(36,42,23,30)/131)
+V5GlobLDA <- lda( SortIpV5[,-c(1:15,32,39)],SortIpV5$group, prior = c(41,73,15)/129)
+V5GlobLDA
+plot(V5GlobLDA)
+V5LDAScal <- as.data.frame(V5SumMa4LDA$scaling)
+V5LDAScal[,3] <-V5LDAScal$LD1- V5LDAScal$LD2
+```
 
 Cooccurrence Plot by Situation
 ```{r}
@@ -407,30 +451,7 @@ V5SumMa4LDAScal[,3] <-V5SumMa4LDAScal$LD1- V5SumMa4LDAScal$LD2
 
 
 
-Wortart und Lemma als Kategorie
-```{r}
-# Merge Tags
-V5TagMerge <- V5
-remove(k)
-V5TagMerge$tag <-as.character(V5TagMerge$tag)
-V5TagMerge$lemma <- as.character(V5TagMerge$lemma)
-for (k in nrow(V5TagMerge):2) {
-  if((V5TagMerge[k,1]==V5TagMerge[k-1,1])){
-    if(V5TagMerge$tag[k] != V5TagMerge$tag[k-1]){
-    V5TagMerge$tag[k-1] <- stringr::str_c(V5TagMerge$tag[k-1],V5TagMerge$tag[k], sep = ":")
-    V5TagMerge$lemma[k-1] <- stringr::str_c(V5TagMerge$lemma[k-1],V5TagMerge$lemma[k], sep = ":")
-    
-    }
-    V5TagMerge <- V5TagMerge[-k,]
-  }else{
-    next()
-  }
-  
-}
-V5TagMerge$tag <-as.factor(V5TagMerge$tag)
-V5TagMerge$lemma <-as.factor(V5TagMerge$lemma)
-V5IpTag <- cbind(SortIpV5,V5TagMerge$tag,V5TagMerge$lemma)
-```
+
 Lemma als Kategorie
 
 ```{r}
