@@ -162,7 +162,6 @@ SortIpV5[is.na(SortIpV5)] <- 0 #NA durch 0 ersetzen
 #corV5 <- cor(AnalyseV5[,-c(13,16:17,22:24,35,36)])
 #V5LDA <- lda(as.formula(paste(f)),data=SortIpV5, prior=c(36,42,23,30)/131)
 V5GlobLDA <- lda( SortIpV5[,-c(1:15,32,39)],SortIpV5$group, prior = c(41,73,15)/129)
-V5GlobLDA
 plot(V5GlobLDA)
 V5LDAScal <- as.data.frame(V5SumMa4LDA$scaling)
 V5LDAScal[,3] <-V5LDAScal$LD1- V5LDAScal$LD2
