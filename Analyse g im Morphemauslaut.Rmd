@@ -3,6 +3,7 @@ title: "R Notebook"
 output: html_notebook
 ---
 Analyse VndsBand
+
 Clusterverfahren in Funktion schreiben
 ```{r}
 com_clust <- function(data,variables = c(1:ncol(data)),weight= 1){
