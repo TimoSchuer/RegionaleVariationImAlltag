@@ -216,15 +216,7 @@ V5Sum[,-c(22,23)] %>%
   summarise_all(sum)-> V5Summary
 ```
 
-```{r}
-cor <- cor(V5Summary[,-c(1)])
-V5PCA <- PCA(V5Summary[,-1], quali.sup = 1)
-dimdesc(V5PCA, axes = 1:2)
-plot(V5PCA)
-V5Ma1PCA$ind
 
-#PCA(V5Summary[,-c(1)], quali.sup = 1)
-```
 discriminant analysis global
 ```{r}
 #V5Sum <- rename(V5Sum, group= as.factor.group.)
@@ -513,4 +505,14 @@ colsum <- colSums(V5IpTagNum, na.rm = TRUE)
 find_comb <- function(data, variables){
   
 }
+```
+
+```{r}
+cor <- cor(V5Summary[,-c(1)])
+V5PCA <- PCA(V5Summary[,-1], quali.sup = 1)
+dimdesc(V5PCA, axes = 1:2)
+plot(V5PCA)
+V5Ma1PCA$ind
+
+#PCA(V5Summary[,-c(1)], quali.sup = 1)
 ```
