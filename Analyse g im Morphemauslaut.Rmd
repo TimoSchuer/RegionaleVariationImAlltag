@@ -58,8 +58,8 @@ library(MASS)
 
 Read Korpus, set Path of required Directorys/ files, set Path of treetagger
 ```{r}
-pathDir <- choose.dir()
-pathTagSet <- choose.files()
+pathDir <- "C:\\Users\\Admin\\sciebo\\Publikationen\\VndS Band\\Korpus\\Formatiert\\ohne schnelle Anschlüsse"
+pathTagSet <- "C:\\Users\\Admin\\sciebo\\Publikationen\\VndS Band\\Korpus\\Formatiert\\2017_09_26_Annotation TagSet.xml"
 PathTreeTag= "C:/TreeTagger/bin/tag-german.bat" 
 set.kRp.env(TT.cmd= PathTreeTag, lang= "de")#Pfad des TreeTagges setzen
 ```
@@ -69,6 +69,7 @@ Subsetting annotated events
 Corpus <- read_exb_dir(pathDir = pathDir, PathTagSet = pathTagSet, addMetaData = TRUE)
 Corpus$Variable <- stringr::str_remove_all(Corpus$Variable,";")
 Annotated <- filter(Corpus, !(is.na(Variable)))
+Annotated <- Annotated [,-c(8:11)] # remove irrelevant Metadata
 ```
 Split up Variable and variant
 ```{r}
@@ -91,7 +92,7 @@ write.csv(Annotated, file= "Annotated.csv", sep = ";")
 Belege für g im Morphem- und Wortauslaut auswählen
 ```{r}
 V5 <- filter(Annotated, Variable=="V05")
-AnalyseV5 <- dplyr::select(V5, 3,6,19,24:27,31,32) 
+AnalyseV5 <- dplyr::select(V5, 3,6,11,14:28) 
 for (k in 1:ncol(AnalyseV5)) {
   AnalyseV5[,k] <- as.factor(AnalyseV5[,k])
 }
@@ -100,19 +101,7 @@ AnalyseV5 <- com_clust(AnalyseV5)
 AnalyseV5 <- AnalyseV5[[1]]
 ```
 
-```{r}
-# Vars <- colnames(AnalyseV5)
-# AnalyseV5 <- V5[,which(colSums(AnalyseV5)>0)]
-Vars <- colnames(AnalyseV5)
-f <- paste(Vars[10], "~", paste(Vars[-c(10,4)], collapse=" + "))
-#corV5 <- cor(AnalyseV5[,-c(13,16:17,22:24,35,36)])
-V5LDA <- lda(as.formula(paste(f)),data=AnalyseV5, prior=c(36,42,23,30)/131)
-V5LDA
-plot(V5LDA)
-V5LDAScal <- as.data.frame(V5SumMa4LDA$scaling)
-V5LDAScal[,3] <-V5LDAScal$LD1- V5LDAScal$LD2
 
-```
 Merge Tags by IP
 ```{r}
 # Merge Tags
@@ -142,7 +131,7 @@ Plot Kookkurrenz über Situationen hinweg
 SortIpNA <- sort_by_unit(exb=Corpus, drop = TRUE)
 SortIpNaAbsolute <- sort_by_unit(Corpus, drop=TRUE, percentage=FALSE)
 SortIpV5 <- filter(SortIpNA, SortIpNA$`Variable:V05:gg`!=0|SortIpNA$`Variable:V05:ch`!=0)
-SortIpV5 <- bind_cols(SortIpV5, V5TagMerge[,31:32])
+SortIpV5 <- bind_cols(SortIpV5, V5TagMerge[,27:28])
 #SortIpOHNEMA3 <- filter(SortIpV5,File != " Ma3" )
 #SortIpV4 <- select(SortIpV4, 1,16:40)
 for (p in 1:ncol(SortIpNA)) {
@@ -151,22 +140,7 @@ for (p in 1:ncol(SortIpNA)) {
 SortIpV5 <- com_clust(SortIpV5, variables = c(16:38))
 SortIpV5 <- SortIpV5[[1]]
 ```
-LDA coocurrence Global
 
-```{r}
-# Vars <- colnames(AnalyseV5)
-# AnalyseV5 <- V5[,which(colSums(AnalyseV5)>0)]
-SortIpV5[is.na(SortIpV5)] <- 0 #NA durch 0 ersetzen
-#Vars <- colnames(SortIpV5)
-#f <- paste(Vars[39], "~", paste(Vars[-c(1:2,5:15,39)], collapse=" + "))
-#corV5 <- cor(AnalyseV5[,-c(13,16:17,22:24,35,36)])
-#V5LDA <- lda(as.formula(paste(f)),data=SortIpV5, prior=c(36,42,23,30)/131)
-V5GlobLDA <- lda( SortIpV5[,-c(1:15,32,39)],SortIpV5$group, prior = c(41,73,15)/129)
-V5GlobLDA$lev <- as.integer(V5GlobLDA$lev)
-plot(V5GlobLDA)
-V5LDAScal <- as.data.frame(V5SumMa4LDA$scaling)
-V5LDAScal[,3] <-V5LDAScal$LD1- V5LDAScal$LD2
-```
 
 Cooccurrence Plot by Situation
 ```{r}
@@ -220,9 +194,11 @@ V5Sum[,-c(22,23)] %>%
 discriminant analysis global
 ```{r}
 #V5Sum <- rename(V5Sum, group= as.factor.group.)
-Vars <- colnames(V5Sum)
-f <- paste(Vars[24], "~", paste(Vars[-c(13,22:24,16:17,35:36)], collapse=" + "))
-corV5Sum <- cor(V5Sum[,-c(13,16:17,22:24,35,36)])
+# Vars <- colnames(V5Sum)
+# f <- paste(Vars[24], "~", paste(Vars[-c(13,22:24,16:17,35:36)], collapse=" + "))
+# corV5Sum <- cor(V5Sum[,-c(13,16:17,22:24,35,36)])
+# priors <- count(V5Sum, group)
+priors <- c(priors$n)
 V5SumLDA <- lda(as.formula(paste(f)),data=V5Sum, prior=c(41,73,15)/129)
 V5SumLDA
 plot(V5SumLDA)
@@ -350,7 +326,24 @@ V5SumMa4LDAScal[,3] <-V5SumMa4LDAScal$LD1- V5SumMa4LDAScal$LD2
 ```
 
 
+LDA coocurrence Global
 
+```{r}
+# Vars <- colnames(AnalyseV5)
+# AnalyseV5 <- V5[,which(colSums(AnalyseV5)>0)]
+SortIpV5[is.na(SortIpV5)] <- 0 #NA durch 0 ersetzen
+#Vars <- colnames(SortIpV5)
+#f <- paste(Vars[39], "~", paste(Vars[-c(1:2,5:15,39)], collapse=" + "))
+#corV5 <- cor(AnalyseV5[,-c(13,16:17,22:24,35,36)])
+#V5LDA <- lda(as.formula(paste(f)),data=SortIpV5, prior=c(36,42,23,30)/131)
+priors <- count(SortIpV5, group)
+priors <- c(priors$n)
+V5GlobLDA <- lda( SortIpV5[,-c(1:15,32,39)],SortIpV5$group, prior = priors/nrow(SortIpV5))
+V5GlobLDA$lev <- as.integer(V5GlobLDA$lev)
+plot(V5GlobLDA)
+V5LDAScal <- as.data.frame(V5SumMa4LDA$scaling)
+V5LDAScal[,3] <-V5LDAScal$LD1- V5LDAScal$LD2
+```
 
 
 
@@ -515,4 +508,22 @@ plot(V5PCA)
 V5Ma1PCA$ind
 
 #PCA(V5Summary[,-c(1)], quali.sup = 1)
+```
+
+```{r}
+# Vars <- colnames(AnalyseV5)
+# AnalyseV5 <- V5[,which(colSums(AnalyseV5)>0)]
+Vars <- colnames(AnalyseV5)
+f <- paste(Vars[10], "~", paste(Vars[-c(10,4)], collapse=" + "))
+#corV5 <- cor(AnalyseV5[,-c(13,16:17,22:24,35,36)])
+#get priors
+priors <- count(AnalyseV5, group)
+priors <- c(priors$n)
+#for k in nrow(priors){}
+V5LDA <- lda(AnalyseV5[,-c(3,19)],AnalyseV5$group, prior=priors/nrow(AnalyseV5))
+V5LDA
+plot(V5LDA)
+V5LDAScal <- as.data.frame(V5SumMa4LDA$scaling)
+V5LDAScal[,3] <-V5LDAScal$LD1- V5LDAScal$LD2
+
 ```
