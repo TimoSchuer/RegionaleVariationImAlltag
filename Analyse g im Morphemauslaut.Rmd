@@ -137,7 +137,7 @@ SortIpV5 <- bind_cols(SortIpV5, V5TagMerge[,27:28])
 for (p in 1:ncol(SortIpNA)) {
   SortIpNA[,p] <- as.factor(SortIpNA[,p])
 }
-SortIpV5 <- com_clust(SortIpV5, variables = c(16:38))
+SortIpV5 <- com_clust(SortIpV5, variables = c(16:36))
 SortIpV5 <- SortIpV5[[1]]
 ```
 
@@ -176,6 +176,7 @@ V5Sum <- fastDummies::dummy_columns(V5Sum, select_columns = "tag")
 V5Sum <- fastDummies::dummy_columns(V5Sum, select_columns = "lemma")
 V5Sum <- data.frame(lapply(V5Sum, as.character), stringsAsFactors=FALSE)
 V5Sum[is.na(V5Sum)] <- 0
+V5Sum <- V5Sum[,-c(22,23)]
 for (k in 1: ncol(V5Sum)){
   #if(!(is.na(V5Ma1Sum[l,k]))){
   #for (l in 1:nrow(V5Ma1Sum)) {
@@ -197,9 +198,9 @@ discriminant analysis global
 # Vars <- colnames(V5Sum)
 # f <- paste(Vars[24], "~", paste(Vars[-c(13,22:24,16:17,35:36)], collapse=" + "))
 # corV5Sum <- cor(V5Sum[,-c(13,16:17,22:24,35,36)])
-# priors <- count(V5Sum, group)
+priors <- count(V5Sum, group)
 priors <- c(priors$n)
-V5SumLDA <- lda(as.formula(paste(f)),data=V5Sum, prior=c(41,73,15)/129)
+V5SumLDA <- lda(V5Sum[,-c(17,18,22)], V5Sum$group, prior=priors/nrow(V5Sum))
 V5SumLDA
 plot(V5SumLDA)
 ```
@@ -217,6 +218,7 @@ V5SumMa1 <- fastDummies::dummy_columns(V5SumMa1, select_columns = "tag")
 V5SumMa1 <- fastDummies::dummy_columns(V5SumMa1, select_columns = "lemma")
 V5SumMa1 <- data.frame(lapply(V5SumMa1, as.character), stringsAsFactors=FALSE)
 V5SumMa1[is.na(V5SumMa1)] <- 0
+V5SumMa1 <- V5SumMa1[,-c(22,23)]
 for (k in 1: ncol(V5SumMa1)){
   #if(!(is.na(V5Ma1Sum[l,k]))){
   #for (l in 1:nrow(V5Ma1Sum)) {
@@ -226,7 +228,7 @@ for (k in 1: ncol(V5SumMa1)){
 }
 #V5Ma1Sum <-  rename(V5Ma1Sum, tag=V5TagMerge.tag)
 #V5Ma1Sum <- rename(V5Ma1Sum, group= as.factor.group.)
-V5SumMa1[,-c(22,23)] %>%
+V5SumMa1 %>%
   group_by(group)%>%
   summarise_all(sum)-> V5SummaryMa1
 
@@ -242,6 +244,7 @@ V5SumMa2 <- fastDummies::dummy_columns(V5SumMa2, select_columns = "tag")
 V5SumMa2 <- fastDummies::dummy_columns(V5SumMa2, select_columns = "lemma")
 V5SumMa2 <- data.frame(lapply(V5SumMa2, as.character), stringsAsFactors=FALSE)
 V5SumMa2[is.na(V5SumMa2)] <- 0
+V5SumMa2 <- V5SumMa2[,-c(22,23)]
 for (k in 1: ncol(V5SumMa2)){
   #if(!(is.na(V5Ma1Sum[l,k]))){
   #for (l in 1:nrow(V5Ma1Sum)) {
@@ -251,7 +254,7 @@ for (k in 1: ncol(V5SumMa2)){
 }
 #V5Ma1Sum <-  rename(V5Ma1Sum, tag=V5TagMerge.tag)
 #V5Ma1Sum <- rename(V5Ma1Sum, group= as.factor.group.)
-V5SumMa2[,-c(22,23)] %>%
+V5SumMa2 %>%
   group_by(group)%>%
   summarise_all(sum)-> V5SummaryMa2
 
@@ -267,6 +270,7 @@ V5SumMa4 <- fastDummies::dummy_columns(V5SumMa4, select_columns = "tag")
 V5SumMa4 <- fastDummies::dummy_columns(V5SumMa4, select_columns = "lemma")
 V5SumMa4 <- data.frame(lapply(V5SumMa4, as.character), stringsAsFactors=FALSE)
 V5SumMa4[is.na(V5SumMa4)] <- 0
+V5SumMa4 <- V5SumMa4[,-c(22,23)]
 for (k in 1: ncol(V5SumMa4)){
   #if(!(is.na(V5Ma1Sum[l,k]))){
   #for (l in 1:nrow(V5Ma1Sum)) {
@@ -276,7 +280,7 @@ for (k in 1: ncol(V5SumMa4)){
 }
 #V5Ma1Sum <-  rename(V5Ma1Sum, tag=V5TagMerge.tag)
 #V5Ma1Sum <- rename(V5Ma1Sum, group= as.factor.group.)
-V5SumMa4[,-c(22,23)] %>%
+V5SumMa4 %>%
   group_by(group)%>%
   summarise_all(sum)-> V5SummaryMa4
 ```
@@ -290,11 +294,14 @@ V5SumMa2 <- mutate_if(V5SumMa2, is.double, as.integer)
 V5SumMa4 <- mutate_if(V5SumMa4, is.double, as.integer)
 ```
 ```{r}
-V5SumMa1 <- V5SumMa1[,which(colSums(V5SumMa1)>0)]
-Vars <- colnames(V5SumMa1)
-f <- paste(Vars[15], "~", paste(Vars[-c(15)], collapse=" + "))
+V5SumMa1 <- V5SumMa1[,which(colSums(V5SumMa1)>0)]#Variablen ausschließen, die nie auftreten und durch ihre Konstanz fehlermeldung verursachen
+# Vars <- colnames(V5SumMa1)
+#f <- paste(Vars[15], "~", paste(Vars[-c(15)], collapse=" + "))
 corV5SumMa1 <- cor(V5SumMa1[,-c(16:18)])
-V5SumMa1LDA <- lda(as.formula(paste(f)),data=V5SumMa1, prior=c(26,15,13)/54)
+priors <- count(V5SumMa1, group)
+priors <- c(priors$n)
+
+V5SumMa1LDA <- lda(V5SumMa1[,-which(names(V5SumMa1) =="group")],V5SumMa1$group, prior=priors/nrow(V5SumMa1))
 V5SumMa1LDA
 plot(V5SumMa1LDA)
 V5SumMa1LDAScal <- as.data.frame(V5SumMa1LDA$scaling)
@@ -303,10 +310,11 @@ V5SumMa1LDAScal[,3] <-V5SumMa1LDAScal$LD1- V5SumMa1LDAScal$LD2
 
 ```{r}
 V5SumMa2 <- V5SumMa2[,which(colSums(V5SumMa2)>0)]
-Vars <- colnames(V5SumMa2)
-f <- paste(Vars[16], "~", paste(Vars[-c(16)], collapse=" + "))
+
 corV5SumMa2 <- cor(V5SumMa2[,-14])
-V5SumMa2LDA <- lda(as.formula(paste(f)),data=V5SumMa2, prior=c(17,21,3)/41)
+priors <- count(V5SumMa2, group)
+priors <- c(priors$n)
+V5SumMa2LDA <- lda(V5SumMa2[,-which(names(V5SumMa2) =="group")],V5SumMa2$group, prior=priors/nrow(V5SumMa2))
 V5SumMa2LDA
 plot(V5SumMa2LDA)
 V5SumMa2LDAScal <- as.data.frame(V5SumMa2LDA$scaling)
@@ -315,10 +323,9 @@ V5SumMa2LDAScal[,3] <-V5SumMa2LDAScal$LD1- V5SumMa2LDAScal$LD2
 
 ```{r}
 V5SumMa4 <- V5SumMa4[,which(colSums(V5SumMa4)>0)]
-Vars <- colnames(V5SumMa4)
-f <- paste(Vars[14], "~", paste(Vars[-14], collapse=" + "))
-corV5SumMa4 <- cor(V5SumMa4[,-c(13,16:17,22:24,35,36)])
-V5SumMa4LDA <- lda(as.formula(paste(f)),data=V5SumMa4, prior=c(9,25)/34)
+priors <- count(V5SumMa4, group)
+priors <- c(priors$n)
+V5SumMa4LDA <- lda(V5SumMa4[,-which(names(V5SumMa4) =="group")],V5SumMa4$group, prior=priors/nrow(V5SumMa4))
 V5SumMa4LDA
 plot(V5SumMa4LDA)
 V5SumMa4LDAScal <- as.data.frame(V5SumMa4LDA$scaling)
