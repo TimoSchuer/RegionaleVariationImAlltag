@@ -172,7 +172,7 @@ V5Sum <- SortIpV5[,16:39]
 #   
 # }
 
-V5Sum <- fastDummies::dummy_columns(V5Sum, select_columns = "tag")
+#V5Sum <- fastDummies::dummy_columns(V5Sum, select_columns = "tag")
 V5Sum <- fastDummies::dummy_columns(V5Sum, select_columns = "lemma")
 V5Sum <- data.frame(lapply(V5Sum, as.character), stringsAsFactors=FALSE)
 V5Sum[is.na(V5Sum)] <- 0
@@ -186,7 +186,7 @@ for (k in 1: ncol(V5Sum)){
 }
 #V5Ma1Sum <-  rename(V5Ma1Sum, tag=V5TagMerge.tag)
 #V5Ma1Sum <- rename(V5Ma1Sum, group= as.factor.group.)
-V5Sum[,-c(22,23)] %>%
+V5Sum %>%
   group_by(group)%>%
   summarise_all(sum)-> V5Summary
 ```
@@ -203,6 +203,11 @@ priors <- c(priors$n)
 V5SumLDA <- lda(V5Sum[,-c(17,18,22)], V5Sum$group, prior=priors/nrow(V5Sum))
 V5SumLDA
 plot(V5SumLDA)
+V5SumLDAScal <- as.data.frame(V5SumLDA$scaling)
+V5SumLDAScal[,3] <-V5SumLDAScal$LD1- V5SumLDAScal$LD2
+V5SumLDAScal
+rownumbers <- row(V5SumLDAScal)
+ggplot(data=V5SumLDAScal, aes(x=LD1, y=LD2))+geom_text(aes(label=rownames(V5SumLDAScal)))
 ```
 Summarise by group/situation
 ```{r}
@@ -214,7 +219,7 @@ V5SumMa1 <- SortIpV5Ma1[,16:39]
 #   
 # }
 
-V5SumMa1 <- fastDummies::dummy_columns(V5SumMa1, select_columns = "tag")
+#V5SumMa1 <- fastDummies::dummy_columns(V5SumMa1, select_columns = "tag")
 V5SumMa1 <- fastDummies::dummy_columns(V5SumMa1, select_columns = "lemma")
 V5SumMa1 <- data.frame(lapply(V5SumMa1, as.character), stringsAsFactors=FALSE)
 V5SumMa1[is.na(V5SumMa1)] <- 0
@@ -306,6 +311,7 @@ V5SumMa1LDA
 plot(V5SumMa1LDA)
 V5SumMa1LDAScal <- as.data.frame(V5SumMa1LDA$scaling)
 V5SumMa1LDAScal[,3] <-V5SumMa1LDAScal$LD1- V5SumMa1LDAScal$LD2
+ggplot(data=V5SumMa1LDAScal, aes(x=LD1, y=LD2))+geom_text(aes(label=rownames(V5SumMa1LDAScal)))
 ```
 
 ```{r}
