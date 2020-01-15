@@ -66,10 +66,10 @@ set.kRp.env(TT.cmd= PathTreeTag, lang= "de")#Pfad des TreeTagges setzen
 Read Korpus
 Subsetting annotated events
 ```{r}
-Corpus <- read_exb_dir(pathDir = pathDir, PathTagSet = pathTagSet, addMetaData = TRUE)
+Corpus <- read_exb_dir(pathDir = pathDir, addMetaData = TRUE)
 Corpus$Variable <- stringr::str_remove_all(Corpus$Variable,";")
 Annotated <- filter(Corpus, !(is.na(Variable)))
-Annotated <- Annotated [,-c(8:11)] # remove irrelevant Metadata
+Annotated <- Annotated [,-c(15:19)] # remove irrelevant Metadata
 ```
 Split up Variable and variant
 ```{r}
@@ -126,23 +126,31 @@ V5TagMerge$tag <-as.factor(V5TagMerge$tag)
 V5TagMerge$lemma <-as.factor(V5TagMerge$lemma)
 #V5IpTag <- cbind(SortIpV5,V5TagMerge$tag,V5TagMerge$lemma)
 ```
-Plot Kookkurrenz über Situationen hinweg
+Sort by IP
 ```{r}
 SortIpNA <- sort_by_unit(exb=Corpus, drop = TRUE)
 SortIpNaAbsolute <- sort_by_unit(Corpus, drop=TRUE, percentage=FALSE)
+```
+
+Plot Kookkurrenz über Situationen hinweg (mit Lemma und Wortart)
+```{r}
 SortIpV5 <- filter(SortIpNA, SortIpNA$`Variable:V05:gg`!=0|SortIpNA$`Variable:V05:ch`!=0)
-SortIpV5 <- bind_cols(SortIpV5, V5TagMerge[,27:28])
+SortIpV5 <- bind_cols(SortIpV5, V5TagMerge[,31:32])
 #SortIpOHNEMA3 <- filter(SortIpV5,File != " Ma3" )
 #SortIpV4 <- select(SortIpV4, 1,16:40)
 for (p in 1:ncol(SortIpNA)) {
   SortIpNA[,p] <- as.factor(SortIpNA[,p])
 }
-SortIpV5 <- com_clust(SortIpV5, variables = c(16:36))
+SortIpV5 <- com_clust(SortIpV5, variables = c(21:43))
+SortIpV5 <- SortIpV5[[1]]
+```
+Plot Kookkurrenz über Situationen hinweg (ohne Lemma und Wortart)
+```{r}
+SortIpV5 <- com_clust(SortIpV5, variables = c(21:41))
 SortIpV5 <- SortIpV5[[1]]
 ```
 
-
-Cooccurrence Plot by Situation
+Cooccurrence Plot by Situation (mit Lemma und Wortart)
 ```{r}
 #SortIpNA <- sort_by_unit(exb=Corpus, drop = TRUE)
 
@@ -155,16 +163,28 @@ for (k in 1:length(files)) {
   name <- stringr::str_glue("SortIpV5",stringr::str_trim(files[k]))
   assign(name,g)
 }
-SortIpV5Ma1 <- com_clust(SortIpV5Ma1,variables = c(16:38))
+SortIpV5Ma1 <- com_clust(SortIpV5Ma1,variables = c(21:43))
 SortIpV5Ma1 <- SortIpV5Ma1[[1]]
-SortIpV5Ma2 <- com_clust(SortIpV5Ma2,variables = c(16:38))
+SortIpV5Ma2 <- com_clust(SortIpV5Ma2,variables = c(21:43))
 SortIpV5Ma2 <- SortIpV5Ma2[[1]]
-SortIpV5Ma4 <- com_clust(SortIpV5Ma4,variables = c(16:38))
+SortIpV5Ma4 <- com_clust(SortIpV5Ma4,variables = c(21:43))
 SortIpV5Ma4 <- SortIpV5Ma4[[1]]
 ```
-Summarise by group/global
+Cooccurrence Plot by Situation (ohne Lemma und Wortart)
 ```{r}
-V5Sum <- SortIpV5[,16:39]
+#SortIpNA <- sort_by_unit(exb=Corpus, drop = TRUE)
+
+
+SortIpV5Ma1 <- com_clust(SortIpV5Ma1,variables = c(21:41))
+SortIpV5Ma1 <- SortIpV5Ma1[[1]]
+SortIpV5Ma2 <- com_clust(SortIpV5Ma2,variables = c(21:41))
+SortIpV5Ma2 <- SortIpV5Ma2[[1]]
+SortIpV5Ma4 <- com_clust(SortIpV5Ma4,variables = c(21:41))
+SortIpV5Ma4 <- SortIpV5Ma4[[1]]
+```
+Summarise by group/global (mit Lemma und Wortart)
+```{r}
+V5Sum <- SortIpV5[,21:44]
 # for (k in 1:ncol(V5Ma1Sum)) {
 #   for (l in 1:nrow(V5Ma1Sum)) {
 #     V5Ma1Sum[l,k] <- as.character(V5Ma1Sum[l,k])
@@ -192,7 +212,7 @@ V5Sum %>%
 ```
 
 
-discriminant analysis global
+discriminant analysis global (mit Lemma und Wortart)
 ```{r}
 #V5Sum <- rename(V5Sum, group= as.factor.group.)
 # Vars <- colnames(V5Sum)
@@ -209,9 +229,26 @@ V5SumLDAScal
 rownumbers <- row(V5SumLDAScal)
 ggplot(data=V5SumLDAScal, aes(x=LD1, y=LD2))+geom_text(aes(label=rownames(V5SumLDAScal)))
 ```
-Summarise by group/situation
+discriminant analysis global (ohne Lemma und Wortart)
 ```{r}
-V5SumMa1 <- SortIpV5Ma1[,16:39]
+#V5Sum <- rename(V5Sum, group= as.factor.group.)
+# Vars <- colnames(V5Sum)
+# f <- paste(Vars[24], "~", paste(Vars[-c(13,22:24,16:17,35:36)], collapse=" + "))
+# corV5Sum <- cor(V5Sum[,-c(13,16:17,22:24,35,36)])
+priors <- count(V5Sum, group)
+priors <- c(priors$n)
+V5SumLDA <- lda(V5Sum[,-c(17,18,22:65)], V5Sum$group, prior=priors/nrow(V5Sum))
+V5SumLDA
+plot(V5SumLDA)
+V5SumLDAScal <- as.data.frame(V5SumLDA$scaling)
+V5SumLDAScal[,3] <-V5SumLDAScal$LD1- V5SumLDAScal$LD2
+V5SumLDAScal
+rownumbers <- row(V5SumLDAScal)
+ggplot(data=V5SumLDAScal, aes(x=LD1, y=LD2))+geom_text(aes(label=rownames(V5SumLDAScal)))
+```
+Summarise by group/situation (mit Lemma und Wortart)
+```{r}
+V5SumMa1 <- SortIpV5Ma1[,21:44]
 # for (k in 1:ncol(V5Ma1Sum)) {
 #   for (l in 1:nrow(V5Ma1Sum)) {
 #     V5Ma1Sum[l,k] <- as.character(V5Ma1Sum[l,k])
@@ -237,7 +274,7 @@ V5SumMa1 %>%
   group_by(group)%>%
   summarise_all(sum)-> V5SummaryMa1
 
-V5SumMa2 <- SortIpV5Ma2[,16:39]
+V5SumMa2 <- SortIpV5Ma2[,21:44]
 # for (k in 1:ncol(V5Ma1Sum)) {
 #   for (l in 1:nrow(V5Ma1Sum)) {
 #     V5Ma1Sum[l,k] <- as.character(V5Ma1Sum[l,k])
@@ -263,7 +300,7 @@ V5SumMa2 %>%
   group_by(group)%>%
   summarise_all(sum)-> V5SummaryMa2
 
-V5SumMa4 <- SortIpV5Ma4[,16:39]
+V5SumMa4 <- SortIpV5Ma4[,21:44]
 # for (k in 1:ncol(V5Ma1Sum)) {
 #   for (l in 1:nrow(V5Ma1Sum)) {
 #     V5Ma1Sum[l,k] <- as.character(V5Ma1Sum[l,k])
@@ -289,7 +326,7 @@ V5SumMa4 %>%
   group_by(group)%>%
   summarise_all(sum)-> V5SummaryMa4
 ```
-LDA group/Situation
+LDA group/Situation (mit Lemma und Wortart)
 ```{r}
 #V5SumMa1 <- rename(V5SumMa1, group= as.factor.group.)
 V5SumMa1 <- mutate_if(V5SumMa1, is.double, as.integer)
@@ -298,6 +335,7 @@ V5SumMa2 <- mutate_if(V5SumMa2, is.double, as.integer)
 #V5SumMa4 <- rename(V5SumMa4, group= as.factor.group.)
 V5SumMa4 <- mutate_if(V5SumMa4, is.double, as.integer)
 ```
+LDA Ma1 mit Lemma und Wortart
 ```{r}
 V5SumMa1 <- V5SumMa1[,which(colSums(V5SumMa1)>0)]#Variablen ausschließen, die nie auftreten und durch ihre Konstanz fehlermeldung verursachen
 # Vars <- colnames(V5SumMa1)
@@ -313,7 +351,23 @@ V5SumMa1LDAScal <- as.data.frame(V5SumMa1LDA$scaling)
 V5SumMa1LDAScal[,3] <-V5SumMa1LDAScal$LD1- V5SumMa1LDAScal$LD2
 ggplot(data=V5SumMa1LDAScal, aes(x=LD1, y=LD2))+geom_text(aes(label=rownames(V5SumMa1LDAScal)))
 ```
+LDA Ma1 ohne Lemma und Wortart
+```{r}
+V5SumMa1 <- V5SumMa1[,which(colSums(V5SumMa1)>0)]#Variablen ausschließen, die nie auftreten und durch ihre Konstanz fehlermeldung verursachen
+# Vars <- colnames(V5SumMa1)
+#f <- paste(Vars[15], "~", paste(Vars[-c(15)], collapse=" + "))
+corV5SumMa1 <- cor(V5SumMa1[,-c(16:18)])
+priors <- count(V5SumMa1, group)
+priors <- c(priors$n)
 
+V5SumMa1LDA <- lda(V5SumMa1[,-c(15:38)],V5SumMa1$group, prior=priors/nrow(V5SumMa1))
+V5SumMa1LDA
+plot(V5SumMa1LDA)
+V5SumMa1LDAScal <- as.data.frame(V5SumMa1LDA$scaling)
+V5SumMa1LDAScal[,3] <-V5SumMa1LDAScal$LD1- V5SumMa1LDAScal$LD2
+ggplot(data=V5SumMa1LDAScal, aes(x=LD1, y=LD2))+geom_text(aes(label=rownames(V5SumMa1LDAScal)))
+```
+LDA Ma2 mit Lemma und Wortart
 ```{r}
 V5SumMa2 <- V5SumMa2[,which(colSums(V5SumMa2)>0)]
 
@@ -325,18 +379,100 @@ V5SumMa2LDA
 plot(V5SumMa2LDA)
 V5SumMa2LDAScal <- as.data.frame(V5SumMa2LDA$scaling)
 V5SumMa2LDAScal[,3] <-V5SumMa2LDAScal$LD1- V5SumMa2LDAScal$LD2
+ggplot(data=V5SumMa2LDAScal, aes(x=LD1, y=LD2))+geom_text(aes(label=rownames(V5SumMa2LDAScal)))
+```
+LDA Ma2 ohne Lemma und Wortart
+```{r}
+V5SumMa2 <- V5SumMa2[,which(colSums(V5SumMa2)>0)]
+
+corV5SumMa2 <- cor(V5SumMa2[,-14])
+priors <- count(V5SumMa2, group)
+priors <- c(priors$n)
+V5SumMa2LDA <- lda(V5SumMa2[,-c(16:40)],V5SumMa2$group, prior=priors/nrow(V5SumMa2))
+V5SumMa2LDA
+plot(V5SumMa2LDA)
+V5SumMa2LDAScal <- as.data.frame(V5SumMa2LDA$scaling)
+V5SumMa2LDAScal[,3] <-V5SumMa2LDAScal$LD1- V5SumMa2LDAScal$LD2
+ggplot(data=V5SumMa2LDAScal, aes(x=LD1, y=LD2))+geom_text(aes(label=rownames(V5SumMa2LDAScal)))
 ```
 
+LDA Ma4 mit Lemma und Wortart
 ```{r}
 V5SumMa4 <- V5SumMa4[,which(colSums(V5SumMa4)>0)]
 priors <- count(V5SumMa4, group)
 priors <- c(priors$n)
+V5SumMa4 <- V5SumMa4[,-c(6,7,38)] # konstante Variablen ausschließen
 V5SumMa4LDA <- lda(V5SumMa4[,-which(names(V5SumMa4) =="group")],V5SumMa4$group, prior=priors/nrow(V5SumMa4))
 V5SumMa4LDA
 plot(V5SumMa4LDA)
 V5SumMa4LDAScal <- as.data.frame(V5SumMa4LDA$scaling)
 V5SumMa4LDAScal[,3] <-V5SumMa4LDAScal$LD1- V5SumMa4LDAScal$LD2
+ggplot(data=V5SumMa4LDAScal, aes(x=LD1, y=LD2))+geom_text(aes(label=rownames(V5SumMa4LDAScal)))
 ```
+LDA Ma4 ohne Lemma und Wortart
+```{r}
+V5SumMa4 <- V5SumMa4[,which(colSums(V5SumMa4)>0)]
+priors <- count(V5SumMa4, group)
+priors <- c(priors$n)
+#V5SumMa4 <- V5SumMa4[,-c(6,7,10:33)] # konstante Variablen ausschließen
+V5SumMa4LDA <- lda(V5SumMa4[,-c(6,7,10:38)],V5SumMa4$group, prior=priors/nrow(V5SumMa4))
+V5SumMa4LDA
+plot(V5SumMa4LDA)
+V5SumMa4LDAScal <- as.data.frame(V5SumMa4LDA$scaling)
+V5SumMa4LDAScal[,3] <-V5SumMa4LDAScal$LD1- V5SumMa4LDAScal$LD2
+ggplot(data=V5SumMa4LDAScal, aes(x=LD1, y=LD2))+geom_text(aes(label=rownames(V5SumMa4LDAScal)))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 LDA coocurrence Global
