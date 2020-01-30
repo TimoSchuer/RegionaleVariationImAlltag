@@ -1,0 +1,214 @@
+---
+title: "Analyse Lautposition von historischem /t/ im Auslaut"
+output: html_notebook
+---
+
+
+Clusterverfahren in Funktion schreiben
+```{r}
+com_clust <- function(data,variables = c(1:ncol(data)),weight= 1){
+adjmatrix <- 1- daisy(data[,variables], metric = c("gower"), weights = weight) # ungewichteter Vergleich, ausgenommen e0, e1, da nur ein auftreten überhaupt
+
+x <- as.matrix(adjmatrix) #schreibt Aehnlichkeitsmatrix in ein R Objekt
+
+g1 <- graph_from_adjacency_matrix(x, mode = c("lower"), weighted = TRUE, diag = FALSE, add.colnames = NULL, add.rownames = NA) #erstellt Graphfile aus unterer H??lfte der Aehnlichkeitsmatrix
+
+cfg <- cluster_louvain(g1, weights = NULL) #sucht im Graphen nach Gruppen
+
+#plot(cfg, g1, vertex.size=10, vertex.label.font=20, family="serif", edge.width=E(g1)$weight, sub= stringr::str_c("Modularity=",modularity(cfg))) #Zeichnet Graphen samt Gruppierungen
+
+group <- as.factor(membership(cfg))
+data$group <- group
+
+return(list(data,
+plot(cfg, g1, vertex.size=10, vertex.label.font=20, family="serif", edge.width=E(g1)$weight, sub= stringr::str_c("Modularity=",modularity(cfg)))))
+}
+```
+
+Install the ExmaraldaR Beta Package
+```{r}
+
+library(devtools)
+```
+```{r}
+install_github("TimoSchuer/ExmaraldaR", force = TRUE)
+
+```
+load all required packages
+
+```{r}
+library(ExmaraldaR)
+library(igraph)
+library(Matrix)
+library(cluster)
+library(dplyr)
+library(tm)
+library(koRpus)
+library(koRpus.lang.de)
+library(purrr)
+library(ggplot2)
+library(FactoMineR)
+library(ca)
+library(rms)
+library(MASS)
+library(reshape2)
+
+```
+
+
+Read Korpus, set Path of required Directorys/ files, set Path of treetagger
+```{r}
+pathDir <- "C:\\Users\\Admin\\sciebo\\Publikationen\\VndS Band\\Korpus\\Formatiert\\ohne schnelle Anschlüsse"
+pathTagSet <- "C:\\Users\\Admin\\sciebo\\Publikationen\\VndS Band\\Korpus\\Formatiert\\2017_09_26_Annotation TagSet.xml"
+PathTreeTag= "C:/TreeTagger/bin/tag-german.bat" 
+set.kRp.env(TT.cmd= PathTreeTag, lang= "de")#Pfad des TreeTagges setzen
+```
+Read Korpus
+Subsetting annotated events
+```{r}
+Corpus <- read_exb_dir(pathDir = pathDir, addMetaData = TRUE)
+Corpus$Variable <- stringr::str_remove_all(Corpus$Variable,";")
+Annotated <- filter(Corpus, !(is.na(Variable)))
+Annotated <- Annotated [,-c(15:19)] # remove irrelevant Metadata
+```
+Split up Variable and variant
+```{r}
+Annotated <- tidyr::separate(Annotated,col= "Variable", into=c("Variable","Variante"), sep=":")
+```
+Lemmatize annotated events
+```{r}
+stringr::str_remove_all(Annotated$Text, "\\W") %>% 
+  stringr::str_to_lower() ->token
+  PoSLemma <- treetag(token,debug=TRUE, format= "obj")
+Annotated <- cbind(Annotated, PoSLemma[,2:3])
+
+```
+Corpus und Annotated als CSV speichern für Reproduktion
+```{r}
+write.csv(Corpus, file= "Corpus.csv", sep = ";")
+write.csv(Annotated, file= "Annotated.csv", sep = ";")
+```
+
+Belege für Lautposition von historisch t im Wortauslaut auswählen (V04)
+```{r}
+V4 <- filter(Annotated, Variable=="V04")
+AnalyseV4 <- dplyr::select(V4, 3,6,11,14:28) 
+for (k in 1:ncol(AnalyseV4)) {
+  AnalyseV4[,k] <- as.factor(AnalyseV4[,k])
+}
+#Plot nach annotierten Kategorien
+AnalyseV4 <- com_clust(AnalyseV4)
+AnalyseV4 <- AnalyseV4[[1]]
+```
+
+
+Merge Tags by IP
+```{r}
+# Merge Tags
+V4TagMerge <- V4
+remove(k)
+V4TagMerge$tag <-as.character(V4TagMerge$tag)
+V4TagMerge$lemma <- as.character(V4TagMerge$lemma)
+for (k in nrow(V4TagMerge):2) {
+  if((V4TagMerge[k,1]==V4TagMerge[k-1,1])){
+    if(V4TagMerge$tag[k] != V4TagMerge$tag[k-1]){
+    V4TagMerge$tag[k-1] <- stringr::str_c(V4TagMerge$tag[k-1],V4TagMerge$tag[k], sep = ":")
+    V4TagMerge$lemma[k-1] <- stringr::str_c(V4TagMerge$lemma[k-1],V4TagMerge$lemma[k], sep = ":")
+    
+    }
+    V4TagMerge <- V4TagMerge[-k,]
+  }else{
+    next()
+  }
+  
+}
+V4TagMerge$tag <-as.factor(V4TagMerge$tag)
+V4TagMerge$lemma <-as.factor(V4TagMerge$lemma)
+#V5IpTag <- cbind(SortIpV5,V5TagMerge$tag,V5TagMerge$lemma)
+```
+Sort by IP
+```{r}
+SortIpNA <- sort_by_unit(exb=Corpus, drop = TRUE)
+SortIpNaAbsolute <- sort_by_unit(Corpus, drop=TRUE, percentage=FALSE)
+```
+
+Plot Kookkurrenz über Situationen hinweg (mit Lemma und Wortart)
+```{r}
+SortIpV4 <- filter(SortIpNA, SortIpNA$`Variable:V04:tu`!=0|SortIpNA$`Variable:V04:tv`!=0)
+SortIpV4 <- bind_cols(SortIpV4, V4TagMerge[,31:32])
+#SortIpOHNEMA3 <- filter(SortIpV5,File != " Ma3" )
+#SortIpV4 <- select(SortIpV4, 1,16:40)
+for (p in 1:ncol(SortIpNA)) {
+  SortIpNA[,p] <- as.factor(SortIpNA[,p])
+}
+SortIpV4 <- com_clust(SortIpV4, variables = c(21:43))
+SortIpV4 <- SortIpV4[[1]]
+```
+
+Cooccurrence Plot by Situation (mit Lemma und Wortart)
+```{r}
+#SortIpNA <- sort_by_unit(exb=Corpus, drop = TRUE)
+
+files <- unique(SortIpV4$File)
+for (k in 1:length(files)) {
+  g <- filter(SortIpV4, SortIpV4$File==files[k])
+    for (p in 1:ncol(g)) {
+      g[,p] <- as.factor(g[,p])
+    }
+  name <- stringr::str_glue("SortIpV4",stringr::str_trim(files[k]))
+  assign(name,g)
+}
+SortIpV4Ma1 <- com_clust(SortIpV4Ma1,variables = c(21:43))
+SortIpV4Ma1 <- SortIpV4Ma1[[1]]
+SortIpV4Ma2 <- com_clust(SortIpV4Ma2,variables = c(21:43))
+SortIpV4Ma2 <- SortIpV4Ma2[[1]]
+SortIpV4Ma4 <- com_clust(SortIpV4Ma4,variables = c(21:43))
+SortIpV4Ma4 <- SortIpV4Ma4[[1]]
+```
+Cooccurrence Plot by Situation (ohne Lemma und Wortart)
+```{r}
+#SortIpNA <- sort_by_unit(exb=Corpus, drop = TRUE)
+
+
+SortIpV4Ma1 <- com_clust(SortIpV4Ma1,variables = c(21:41))
+SortIpV4Ma1 <- SortIpV4Ma1[[1]]
+SortIpV4Ma2 <- com_clust(SortIpV4Ma2,variables = c(21:41))
+SortIpV4Ma2 <- SortIpV4Ma2[[1]]
+SortIpV4Ma4 <- com_clust(SortIpV4Ma4,variables = c(21:41))
+SortIpV4Ma4 <- SortIpV4Ma4[[1]]
+```
+Summarise by group/global (mit Lemma und Wortart)
+```{r}
+V4Sum <- SortIpV4[,21:44]
+# for (k in 1:ncol(V5Ma1Sum)) {
+#   for (l in 1:nrow(V5Ma1Sum)) {
+#     V5Ma1Sum[l,k] <- as.character(V5Ma1Sum[l,k])
+#   }
+#   
+# }
+
+#V5Sum <- fastDummies::dummy_columns(V5Sum, select_columns = "tag")
+V4Sum <- fastDummies::dummy_columns(V4Sum, select_columns = "lemma")
+V4Sum <- data.frame(lapply(V4Sum, as.character), stringsAsFactors=FALSE)
+V4Sum[is.na(V4Sum)] <- 0
+V4Sum <- V4Sum[,-c(22,23)]
+for (k in 1: ncol(V4Sum)){
+  #if(!(is.na(V5Ma1Sum[l,k]))){
+  #for (l in 1:nrow(V5Ma1Sum)) {
+    V4Sum[,k] <- as.numeric(V4Sum[,k])
+  #}
+  #}
+}
+#V5Ma1Sum <-  rename(V5Ma1Sum, tag=V5TagMerge.tag)
+#V5Ma1Sum <- rename(V5Ma1Sum, group= as.factor.group.)
+V4Sum %>%
+  group_by(group)%>%
+  summarise_all(sum)-> V4Summary
+```
+Boxplot for Groups
+```{r}
+AnalyseV4[,9:19] %>%  melt(id.vars= "group")%>% group_by(group, variable,value) %>% count() %>% tidyr::unite(Variante, variable,value,sep=":") %>% ggplot(aes(x=group, y= n,fill=factor(Variante)))+geom_bar(stat="identity", position = "dodge")
+
+#V5Summary %>% melt(id.vars = "group") %>% 
+ # ggplot(aes(x=group, y= value,fill=factor(variable)))+geom_bar(stat="identity", position = "dodge")
+```

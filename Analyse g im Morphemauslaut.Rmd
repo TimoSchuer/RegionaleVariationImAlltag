@@ -18,7 +18,7 @@ cfg <- cluster_louvain(g1, weights = NULL) #sucht im Graphen nach Gruppen
 #plot(cfg, g1, vertex.size=10, vertex.label.font=20, family="serif", edge.width=E(g1)$weight, sub= stringr::str_c("Modularity=",modularity(cfg))) #Zeichnet Graphen samt Gruppierungen
 
 group <- as.factor(membership(cfg))
-data <- cBind(data,group)
+data$group <- group
 
 return(list(data,
 plot(cfg, g1, vertex.size=10, vertex.label.font=20, family="serif", edge.width=E(g1)$weight, sub= stringr::str_c("Modularity=",modularity(cfg)))))
