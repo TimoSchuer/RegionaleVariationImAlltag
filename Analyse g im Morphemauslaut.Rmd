@@ -52,6 +52,7 @@ library(FactoMineR)
 library(ca)
 library(rms)
 library(MASS)
+library(reshape2)
 ```
 
 
@@ -88,6 +89,7 @@ Corpus und Annotated als CSV speichern für Reproduktion
 write.csv(Corpus, file= "Corpus.csv", sep = ";")
 write.csv(Annotated, file= "Annotated.csv", sep = ";")
 ```
+
 
 Belege für g im Morphem- und Wortauslaut auswählen
 ```{r}
@@ -210,6 +212,129 @@ V5Sum %>%
   group_by(group)%>%
   summarise_all(sum)-> V5Summary
 ```
+Boxplot for Groups
+```{r}
+AnalyseV5[,9:19] %>%  melt(id.vars= "group")%>% group_by(group, variable,value) %>% count() %>% tidyr::unite(Variante, variable,value,sep=":") %>% ggplot(aes(x=group, y= n,fill=factor(Variante)))+geom_bar(stat="identity", position = "dodge")
+
+#V5Summary %>% melt(id.vars = "group") %>% 
+ # ggplot(aes(x=group, y= value,fill=factor(variable)))+geom_bar(stat="identity", position = "dodge")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 discriminant analysis global (mit Lemma und Wortart)
@@ -423,6 +548,13 @@ V5SumMa4LDAScal[,3] <-V5SumMa4LDAScal$LD1- V5SumMa4LDAScal$LD2
 ggplot(data=V5SumMa4LDAScal, aes(x=LD1, y=LD2))+geom_text(aes(label=rownames(V5SumMa4LDAScal)))
 ```
 
+ExbDateien mit neuer Annotation speichern (Variable und Variante wieder zusammen oder nicht getrennt)
+```{r}
+Annotated <- tidyr::unite(Annotated, "Variable", Variable,Variante, sep=":")
+CorAnn <- left_join(Corpus,Annotated)
+
+write_back_dir(CorAnn,PathExbDir = pathDir, suffix = "_tagged")
+```
 
 
 
