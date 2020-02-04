@@ -21,7 +21,7 @@ group <- as.factor(membership(cfg))
 data$group <- group
 
 return(list(data,
-plot(cfg, g1, vertex.size=10, vertex.label.font=20, family="serif", edge.width=E(g1)$weight,  sub= stringr::str_c("Modularity=",modularity(cfg)))))
+plot(cfg, g1, vertex.size=10, vertex.label.font=20, family="serif", edge.width=E(g1)$weight, sub= stringr::str_c("Modularity=",modularity(cfg)))))
 }
 ```
 
@@ -94,13 +94,13 @@ Annotated <- tidyr::separate(Annotated,col= "Variable", into=c("Variable","Varia
 Belege für Lautposition von historisch t im Wortauslaut auswählen (V04)
 ```{r}
 V4 <- filter(Annotated, Variable=="V04")
-#AnalyseV4 <- dplyr::select(V4, 3,6,11,14:28) 
-#for (k in 1:ncol(AnalyseV4)) {
- # AnalyseV4[,k] <- as.factor(AnalyseV4[,k])
-#}
+AnalyseV4 <- dplyr::select(V4, 3,6,11,14:28) 
+for (k in 1:ncol(AnalyseV4)) {
+  AnalyseV4[,k] <- as.factor(AnalyseV4[,k])
+}
 #Plot nach annotierten Kategorien
-#AnalyseV4 <- com_clust(AnalyseV4)
-#AnalyseV4 <- AnalyseV4[[1]]
+AnalyseV4 <- com_clust(AnalyseV4)
+AnalyseV4 <- AnalyseV4[[1]]
 ```
 
 
@@ -115,7 +115,7 @@ V4TagMerge <- fastDummies::dummy_columns(V4TagMerge, select_columns = c("lemma")
 for (k in nrow(V4TagMerge):2) {
   if((V4TagMerge[k,1]==V4TagMerge[k-1,1])){
     if(V4TagMerge$tag[k] != V4TagMerge$tag[k-1]){
-    V4TagMerge[k-1,33:ncol(V4TagMerge)] <- V4TagMerge[k-1,33:ncol(V4TagMerge)]+V4TagMerge[k,33:ncol(V4TagMerge)]
+    V4TagMerge[k-1,33:62] <- V4TagMerge[k-1,33:62]+V4TagMerge[k,33:62]
    # V4TagMerge$lemma[k-1] <- stringr::str_c(V4TagMerge$lemma[k-1],V4TagMerge$lemma[k], sep = ":")
     
     }
@@ -125,7 +125,7 @@ for (k in nrow(V4TagMerge):2) {
   }
   
 }
-V4TagMerge <- V4TagMerge[,33:ncol(V4TagMerge)]
+V4TagMerge <- V4TagMerge[,33:62]
 for (k in 1:ncol(V4TagMerge)) {
   for(l in 1:nrow(V4TagMerge)){
     if(V4TagMerge[l,k]==0){
@@ -144,7 +144,7 @@ SortIpNA <- sort_by_unit(exb=Corpus, drop = TRUE)
 SortIpNaAbsolute <- sort_by_unit(Corpus, drop=TRUE, percentage=FALSE)
 ```
 
-Plot Kookkurrenz über Situationen hinweg (mit Lemma)
+Plot Kookkurrenz über Situationen hinweg (mit Lemma und Wortart)
 ```{r}
 SortIpV4 <- filter(SortIpNA, SortIpNA$`Variable:V04:tu`!=0|SortIpNA$`Variable:V04:tv`!=0)
 SortIpV4 <- bind_cols(SortIpV4, V4TagMerge)
@@ -153,12 +153,7 @@ SortIpV4 <- bind_cols(SortIpV4, V4TagMerge)
 for (p in 1:ncol(SortIpNA)) {
   SortIpNA[,p] <- as.factor(SortIpNA[,p])
 }
-SortIpV4 <- com_clust(SortIpV4, variables = c(21:69))
-SortIpV4 <- SortIpV4[[1]]
-```
-Plot Global (ohne Lemma)
-```{r}
-SortIpV4 <- com_clust(SortIpV4, variables = c(21:41))
+SortIpV4 <- com_clust(SortIpV4, variables = c(21:62))
 SortIpV4 <- SortIpV4[[1]]
 ```
 
@@ -175,14 +170,14 @@ for (k in 1:length(files)) {
   name <- stringr::str_glue("SortIpV4",stringr::str_trim(files[k]))
   assign(name,g)
 }
-test <- SortIpV4Ma1[,21:62]
+test <- SortIpV4Ma1[,21:75]
 test <- mutate_all(test,as.numeric)
 i <- which(colSums(test)!=0)
-SortIpV4Ma1 <- com_clust(SortIpV4Ma1,variables = c(21:69))
+SortIpV4Ma1 <- com_clust(SortIpV4Ma1,variables = c(21:75))
 SortIpV4Ma1 <- SortIpV4Ma1[[1]]
-SortIpV4Ma2 <- com_clust(SortIpV4Ma2,variables = c(21:69))
+SortIpV4Ma2 <- com_clust(SortIpV4Ma2,variables = c(21:75))
 SortIpV4Ma2 <- SortIpV4Ma2[[1]]
-SortIpV4Ma4 <- com_clust(SortIpV4Ma4,variables = c(21:69))
+SortIpV4Ma4 <- com_clust(SortIpV4Ma4,variables = c(21:75))
 SortIpV4Ma4 <- SortIpV4Ma4[[1]]
 ```
 Cooccurrence Plot by Situation (ohne Lemma und Wortart)
@@ -204,7 +199,7 @@ SortIpV4Ma1[,21:44] %>%  melt(id.vars= "group")%>% group_by(group, variable,valu
 
 Summarise by group/global (mit Lemma und Wortart)
 ```{r}
-V4Sum <- SortIpV4[,21:ncol(SortIpV4)]
+V4Sum <- SortIpV4[,21:44]
 # for (k in 1:ncol(V4Ma1Sum)) {
 #   for (l in 1:nrow(V4Ma1Sum)) {
 #     V4Ma1Sum[l,k] <- as.character(V4Ma1Sum[l,k])
@@ -213,10 +208,10 @@ V4Sum <- SortIpV4[,21:ncol(SortIpV4)]
 # }
 
 #V4Sum <- fastDummies::dummy_columns(V4Sum, select_columns = "tag")
-# V4Sum <- fastDummies::dummy_columns(V4Sum, select_columns = "lemma")
-# V4Sum <- data.frame(lapply(V4Sum, as.character), stringsAsFactors=FALSE)
-# V4Sum[is.na(V4Sum)] <- 0
-# V4Sum <- V4Sum[,-c(22,23)]
+V4Sum <- fastDummies::dummy_columns(V4Sum, select_columns = "lemma")
+V4Sum <- data.frame(lapply(V4Sum, as.character), stringsAsFactors=FALSE)
+V4Sum[is.na(V4Sum)] <- 0
+V4Sum <- V4Sum[,-c(22,23)]
 for (k in 1: ncol(V4Sum)){
   #if(!(is.na(V4Ma1Sum[l,k]))){
   #for (l in 1:nrow(V4Ma1Sum)) {
@@ -228,11 +223,11 @@ for (k in 1: ncol(V4Sum)){
 #V4Ma1Sum <- rename(V4Ma1Sum, group= as.factor.group.)
 V4Sum %>%
   group_by(group)%>%
-  summarise_all(sum,na.rm= TRUE)-> V4Summary
+  summarise_all(sum)-> V4Summary
 ```
 Zusammenfassungen
 ```{r}
-V4SumMa1 <- SortIpV4Ma1[,21:ncol(SortIpV4Ma1)]
+V4SumMa1 <- SortIpV4Ma1[,21:44]
 # for (k in 1:ncol(V4Ma1Sum)) {
 #   for (l in 1:nrow(V4Ma1Sum)) {
 #     V4Ma1Sum[l,k] <- as.character(V4Ma1Sum[l,k])
@@ -241,10 +236,10 @@ V4SumMa1 <- SortIpV4Ma1[,21:ncol(SortIpV4Ma1)]
 # }
 
 #V4SumMa1 <- fastDummies::dummy_columns(V4SumMa1, select_columns = "tag")
-# V4SumMa1 <- fastDummies::dummy_columns(V4SumMa1, select_columns = "lemma")
-# V4SumMa1 <- data.frame(lapply(V4SumMa1, as.character), stringsAsFactors=FALSE)
-# V4SumMa1[is.na(V4SumMa1)] <- 0
-# V4SumMa1 <- V4SumMa1[,-c(22,23)]
+V4SumMa1 <- fastDummies::dummy_columns(V4SumMa1, select_columns = "lemma")
+V4SumMa1 <- data.frame(lapply(V4SumMa1, as.character), stringsAsFactors=FALSE)
+V4SumMa1[is.na(V4SumMa1)] <- 0
+V4SumMa1 <- V4SumMa1[,-c(22,23)]
 for (k in 1: ncol(V4SumMa1)){
   #if(!(is.na(V4Ma1Sum[l,k]))){
   #for (l in 1:nrow(V4Ma1Sum)) {
@@ -256,9 +251,9 @@ for (k in 1: ncol(V4SumMa1)){
 #V4Ma1Sum <- rename(V4Ma1Sum, group= as.factor.group.)
 V4SumMa1 %>%
   group_by(group)%>%
-  summarise_all(sum,na.rm= TRUE)-> V4SummaryMa1
+  summarise_all(sum)-> V4SummaryMa1
 
-V4SumMa2 <- SortIpV4Ma2[,21:ncol(SortIpV4Ma2)]
+V4SumMa2 <- SortIpV4Ma2[,21:44]
 # for (k in 1:ncol(V4Ma1Sum)) {
 #   for (l in 1:nrow(V4Ma1Sum)) {
 #     V4Ma1Sum[l,k] <- as.character(V4Ma1Sum[l,k])
@@ -266,11 +261,11 @@ V4SumMa2 <- SortIpV4Ma2[,21:ncol(SortIpV4Ma2)]
 #   
 # }
 
-# V4SumMa2 <- fastDummies::dummy_columns(V4SumMa2, select_columns = "tag")
-# V4SumMa2 <- fastDummies::dummy_columns(V4SumMa2, select_columns = "lemma")
-# V4SumMa2 <- data.frame(lapply(V4SumMa2, as.character), stringsAsFactors=FALSE)
-# V4SumMa2[is.na(V4SumMa2)] <- 0
-# V4SumMa2 <- V4SumMa2[,-c(22,23)]
+V4SumMa2 <- fastDummies::dummy_columns(V4SumMa2, select_columns = "tag")
+V4SumMa2 <- fastDummies::dummy_columns(V4SumMa2, select_columns = "lemma")
+V4SumMa2 <- data.frame(lapply(V4SumMa2, as.character), stringsAsFactors=FALSE)
+V4SumMa2[is.na(V4SumMa2)] <- 0
+V4SumMa2 <- V4SumMa2[,-c(22,23)]
 for (k in 1: ncol(V4SumMa2)){
   #if(!(is.na(V4Ma1Sum[l,k]))){
   #for (l in 1:nrow(V4Ma1Sum)) {
@@ -282,21 +277,21 @@ for (k in 1: ncol(V4SumMa2)){
 #V4Ma1Sum <- rename(V4Ma1Sum, group= as.factor.group.)
 V4SumMa2 %>%
   group_by(group)%>%
-  summarise_all(sum,na.rm= TRUE)-> V4SummaryMa2
+  summarise_all(sum)-> V4SummaryMa2
 
-V4SumMa4 <- SortIpV4Ma4[,21:ncol(SortIpV4Ma4)]
+V4SumMa4 <- SortIpV4Ma4[,21:44]
 # for (k in 1:ncol(V4Ma1Sum)) {
 #   for (l in 1:nrow(V4Ma1Sum)) {
 #     V4Ma1Sum[l,k] <- as.character(V4Ma1Sum[l,k])
 #   }
 #   
 # }
-# 
-# V4SumMa4 <- fastDummies::dummy_columns(V4SumMa4, select_columns = "tag")
-# V4SumMa4 <- fastDummies::dummy_columns(V4SumMa4, select_columns = "lemma")
-# V4SumMa4 <- data.frame(lapply(V4SumMa4, as.character), stringsAsFactors=FALSE)
-# V4SumMa4[is.na(V4SumMa4)] <- 0
-# V4SumMa4 <- V4SumMa4[,-c(22,23)]
+
+V4SumMa4 <- fastDummies::dummy_columns(V4SumMa4, select_columns = "tag")
+V4SumMa4 <- fastDummies::dummy_columns(V4SumMa4, select_columns = "lemma")
+V4SumMa4 <- data.frame(lapply(V4SumMa4, as.character), stringsAsFactors=FALSE)
+V4SumMa4[is.na(V4SumMa4)] <- 0
+V4SumMa4 <- V4SumMa4[,-c(22,23)]
 for (k in 1: ncol(V4SumMa4)){
   #if(!(is.na(V4Ma1Sum[l,k]))){
   #for (l in 1:nrow(V4Ma1Sum)) {
@@ -308,25 +303,20 @@ for (k in 1: ncol(V4SumMa4)){
 #V4Ma1Sum <- rename(V4Ma1Sum, group= as.factor.group.)
 V4SumMa4 %>%
   group_by(group)%>%
-  summarise_all(sum, na.rm= TRUE)-> V4SummaryMa4
+  summarise_all(sum)-> V4SummaryMa4
 ```
-BarPlots by Group Global
-```{r}
-V4Sum[,c(1:21,50)] %>%  melt(id.vars= "group")%>% group_by(group, variable) %>% summarise(n= sum(value,na.rm= TRUE)) %>%slice(1:22) %>% filter(n!=0)%>% ggplot(aes(x=variable, y= n,fill=factor(group)))+geom_bar(stat="identity", position = "dodge")+scale_fill_grey(name="Gruppe")+labs(x= "Merkmale", title = "Verteilung der Merkmale auf die Gruppen: Global")+theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
-
 Barplots by groups MA1
 ```{r}
-V4SumMa1 %>%  melt(id.vars= "group")%>% group_by(group, variable) %>% summarise(n= sum(value, na.rm = TRUE)) %>%slice(1:22) %>% filter(n!=0)%>% ggplot(aes(x=variable, y= n,fill=factor(group)))+geom_bar(stat="identity", position = "dodge")
+V4SumMa1 %>%  melt(id.vars= "group")%>% group_by(group, variable) %>% summarise(n= sum(value)) %>%slice(1:22) %>% filter(n!=0)%>% ggplot(aes(x=variable, y= n,fill=factor(group)))+geom_bar(stat="identity", position = "dodge")
 ```
 
 Barplots by groups MA2
 ```{r}
-V4SumMa2 %>%  melt(id.vars= "group")%>% group_by(group, variable) %>% summarise(n= sum(value,na.rm= TRUE)) %>%slice(1:22) %>% filter(n!=0)%>% ggplot(aes(x=variable, y= n,fill=factor(group)))+geom_bar(stat="identity", position = "dodge")
+V4SumMa2 %>%  melt(id.vars= "group")%>% group_by(group, variable) %>% summarise(n= sum(value)) %>%slice(1:22) %>% filter(n!=0)%>% ggplot(aes(x=variable, y= n,fill=factor(group)))+geom_bar(stat="identity", position = "dodge")
 ```
 
 Barplots by groups MA4
 ```{r}
-V4SumMa4 %>%  melt(id.vars= "group")%>% group_by(group, variable) %>% summarise(n= sum(value,na.rm= TRUE)) %>%slice(1:22) %>% filter(n!=0)%>% ggplot(aes(x=variable, y= n,fill=factor(group)))+geom_bar(stat="identity", position = "dodge")
+V4SumMa4 %>%  melt(id.vars= "group")%>% group_by(group, variable) %>% summarise(n= sum(value)) %>%slice(1:22) %>% filter(n!=0)%>% ggplot(aes(x=variable, y= n,fill=factor(group)))+geom_bar(stat="identity", position = "dodge")
 ```
 
