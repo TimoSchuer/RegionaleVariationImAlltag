@@ -1,4 +1,0 @@
-"0","#SortIpNA <- sort_by_unit(exb=Corpus, drop = TRUE)"
-"0","i <- SortIpV4Ma1[,21:41] %>% mutate_if(is.factor,as.numeric) %>% colSums(na.rm = TRUE)"
-"0",""
-"0","SortIpV4Ma1 <- com_clust(SortIpV4Ma1,variables = c(21:37,40:41))"

@@ -1,2 +1,0 @@
-"0","Annotated <- tidyr::separate(Annotated,col= ""Variable"", into=c(""Variable"",""Variante""), sep="":"")"
-"0","#Corpus <- tidyr::separate(Corpus,col= ""Variable"", into=c(""Variable"",""Variante""), sep="":"")"

@@ -1,4 +1,0 @@
-"0","SortIpNA <- sort_by_unit(exb=Corpus, drop = TRUE)"
-"2","non-list contrasts argument ignored"
-"0","SortIpNaAbsolute <- sort_by_unit(Corpus, drop=TRUE, percentage=FALSE)"
-"2","non-list contrasts argument ignored"

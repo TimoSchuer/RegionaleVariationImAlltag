@@ -1,6 +1,0 @@
-"0","SortIpV5Ma1 <- SortIpV5Ma1[[1]]"
-"0","SortIpV5Ma2 <- com_clust(SortIpV5Ma2,variables = c(21:43))"
-"2","no non-missing arguments to min; returning Inf"
-"2","no non-missing arguments to max; returning -Inf"
-"2","no non-missing arguments to min; returning Inf"
-"2","no non-missing arguments to max; returning -Inf"

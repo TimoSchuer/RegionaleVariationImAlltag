@@ -1,3 +1,0 @@
-"0","AnalyseV5[,9:19] %>%  melt(id.vars= ""group"")%>% group_by(group, variable,value) %>% count() %>% tidyr::unite(Variante, variable,value,sep="":"") %>% ggplot(aes(x=group, y= n,fill=factor(Variante)))+geom_bar(stat=""identity"", position = ""dodge"")
-"
-"2","attributes are not identical across measure variables; they will be dropped"

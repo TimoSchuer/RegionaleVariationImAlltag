@@ -1,1 +1,0 @@
-"0","Annotated <- tidyr::separate(Annotated,col= ""Variable"", into=c(""Variable"",""Variante""), sep="":"")"

@@ -1,4 +1,0 @@
-"0","pathDir <- ""C:\\Users\\Admin\\sciebo\\Publikationen\\VndS Band\\Korpus\\Formatiert\\ohne schnelle Anschlüsse"""
-"0","pathTagSet <- ""C:\\Users\\Admin\\sciebo\\Publikationen\\VndS Band\\Korpus\\Formatiert\\2017_09_26_Annotation TagSet.xml"""
-"0","PathTreeTag= ""C:/TreeTagger/bin/tag-german.bat"" "
-"0","set.kRp.env(TT.cmd= PathTreeTag, lang= ""de"")#Pfad des TreeTagges setzen"
