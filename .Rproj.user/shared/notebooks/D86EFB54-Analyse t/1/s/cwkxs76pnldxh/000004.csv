@@ -1,0 +1,1 @@
+"0","V4SumMa4 %>%  melt(id.vars= ""group"")%>% group_by(group, variable) %>% summarise(n= sum(value,na.rm= TRUE)) %>%slice(1:22) %>% filter(n!=0)%>% ggplot(aes(x=variable, y= n,fill=factor(group)))+geom_bar(stat=""identity"", position = ""dodge"")"

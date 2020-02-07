@@ -1,0 +1,4 @@
+"0","Corpus <- read_exb_dir(pathDir = pathDir, addMetaData = TRUE)"
+"0","Corpus$Variable <- stringr::str_remove_all(Corpus$Variable,"";"")"
+"0","Annotated <- filter(Corpus, !(is.na(Variable)))"
+"0","Annotated <- Annotated [,-c(15:19)] # remove irrelevant Metadata"

@@ -1,0 +1,4 @@
+"0","#SortIpNA <- sort_by_unit(exb=Corpus, drop = TRUE)"
+"0",""
+"0",""
+"0","SortIpV5Ma1 <- com_clust(SortIpV5Ma1,variables = c(21:41))"

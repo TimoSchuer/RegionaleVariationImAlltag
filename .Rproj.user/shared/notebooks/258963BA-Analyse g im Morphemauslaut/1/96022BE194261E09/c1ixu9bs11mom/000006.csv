@@ -1,0 +1,3 @@
+"0","CorAnn <- left_join(Corpus,Annotated)
+"
+"2","Joining, by = c(""IpNumber"", ""EventNumber"", ""File"", ""Speaker"", ""TierID"", ""Name"", ""sex"", ""languagesUsed"", ""L1"", ""L2"", ""comment"", ""Alter"", ""Ort"", ""Beruf"", ""Text"", ""Start"", ""End"", ""Variable"", ""Lvor"", ""Lvor1"", ""SiPos"", ""SiA"", ""WPos"", ""IpPos"", ""TPos"", ""Akz"", ""UC"", ""App"", ""Morph"")"

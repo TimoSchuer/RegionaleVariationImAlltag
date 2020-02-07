@@ -1,0 +1,12 @@
+"0","stringr::str_remove_all(Annotated$Text, ""\\W"") %>% "
+"0","  stringr::str_to_lower() ->token"
+"0","  PoSLemma <- treetag(token,debug=TRUE, format= ""obj"")"
+"2","
+        file:  C:\Users\Admin\AppData\Local\Temp\RtmpSaO5qq\tempTextFromObject4f0458bc1a9a.txt 
+        sys.tt.call:  C:/TreeTagger/bin/tag-german.bat C:\Users\Admin\AppData\Local\Temp\RtmpSaO5qq\tempTextFromObject4f0458bc1a9a.txt 
+
+"
+"0","Annotated <- cbind(Annotated, PoSLemma[,2:3])"
+"0","Corpus <- left_join(Corpus, Annotated)"
+"2","Joining, by = c(""IpNumber"", ""EventNumber"", ""File"", ""Speaker"", ""TierID"", ""Name"", ""sex"", ""languagesUsed"", ""L1"", ""L2"", ""comment"", ""Alter"", ""Ort"", ""Beruf"", ""Text"", ""Start"", ""End"", ""Variable"", ""Lvor"", ""Lvor1"", ""SiPos"", ""SiA"", ""WPos"", ""IpPos"", ""TPos"", ""Akz"", ""UC"", ""App"", ""Morph"")"
+"0","#test <- tidyr::unite(Corpus,Variable, Variable:Variante, sep="":"")"

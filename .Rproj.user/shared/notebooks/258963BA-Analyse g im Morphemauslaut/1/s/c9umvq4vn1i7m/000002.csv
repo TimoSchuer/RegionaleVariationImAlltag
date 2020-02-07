@@ -1,0 +1,10 @@
+"0","stringr::str_remove_all(Annotated$Text, ""\\W"") %>% "
+"0","  stringr::str_to_lower() ->token"
+"0","  PoSLemma <- treetag(token,debug=TRUE, format= ""obj"")"
+"2","
+        file:  C:\Users\Admin\AppData\Local\Temp\Rtmpsn0eIV\tempTextFromObject5368655859d0.txt 
+        sys.tt.call:  C:/TreeTagger/bin/tag-german.bat C:\Users\Admin\AppData\Local\Temp\Rtmpsn0eIV\tempTextFromObject5368655859d0.txt 
+
+"
+"0","Annotated <- cbind(Annotated, PoSLemma[,2:3])"
+"0",""

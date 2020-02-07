@@ -1,0 +1,7 @@
+"0","V4 <- filter(Annotated, Variable==""V04"")"
+"0","AnalyseV4 <- dplyr::select(V4, 3,6,11,14:28) "
+"0","for (k in 1:ncol(AnalyseV4)) {"
+"0","  AnalyseV4[,k] <- as.factor(AnalyseV4[,k])"
+"0","}"
+"0","#Plot nach annotierten Kategorien"
+"0","AnalyseV4 <- com_clust(AnalyseV4)"

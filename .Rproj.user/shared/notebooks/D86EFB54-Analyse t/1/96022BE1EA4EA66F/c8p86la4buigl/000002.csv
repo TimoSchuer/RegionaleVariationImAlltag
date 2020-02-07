@@ -1,0 +1,4 @@
+"0","write.csv(Corpus, file= ""Corpus.csv"", sep = "";"")"
+"2","Versuch ignoriert 'sep' zu setzen"
+"0","write.csv(Annotated, file= ""Annotated.csv"", sep = "";"")"
+"2","Versuch ignoriert 'sep' zu setzen"
