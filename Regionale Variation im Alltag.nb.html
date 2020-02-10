@@ -1749,20 +1749,54 @@ summary {
 
 
 <!-- rnb-text-begin -->
-<p>In diesem Notebook werden die Daten und Analyse für den Artikel “Regionale Variation im Alltag- Kookkurrenzmuster und interaktionale Funktionalisierung”</p>
+<p>In diesem Notebook werden die Daten und Analyse für den Artikel “Regionale Variation im Alltag- Kookkurrenzmuster und interaktionale Funktionalisierung” dargestellt.</p>
+<p>Funktionen definieren Cluster-Verfahren (Kap. 4.1.2)</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGxvdChjYXJzKVxuYGBgIn0= -->
-<pre class="r"><code>plot(cars)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29tX2NsdXN0IDwtIGZ1bmN0aW9uKGRhdGEsdmFyaWFibGVzID0gYygxOm5jb2woZGF0YSkpLHdlaWdodD0gMSl7XG5hZGptYXRyaXggPC0gMS0gZGFpc3koZGF0YVssdmFyaWFibGVzXSwgbWV0cmljID0gYyhcImdvd2VyXCIpLCB3ZWlnaHRzID0gd2VpZ2h0KSAjIHVuZ2V3aWNodGV0ZXIgVmVyZ2xlaWNoLCBhdXNnZW5vbW1lbiBlMCwgZTEsIGRhIG51ciBlaW4gYXVmdHJldGVuIMO8YmVyaGF1cHRcblxueCA8LSBhcy5tYXRyaXgoYWRqbWF0cml4KSAjc2NocmVpYnQgQWVobmxpY2hrZWl0c21hdHJpeCBpbiBlaW4gUiBPYmpla3RcblxuZzEgPC0gZ3JhcGhfZnJvbV9hZGphY2VuY3lfbWF0cml4KHgsIG1vZGUgPSBjKFwibG93ZXJcIiksIHdlaWdodGVkID0gVFJVRSwgZGlhZyA9IEZBTFNFLCBhZGQuY29sbmFtZXMgPSBOVUxMLCBhZGQucm93bmFtZXMgPSBOQSkgI2Vyc3RlbGx0IEdyYXBoZmlsZSBhdXMgdW50ZXJlciBIPz9sZnRlIGRlciBBZWhubGljaGtlaXRzbWF0cml4XG5cbmNmZyA8LSBjbHVzdGVyX2xvdXZhaW4oZzEsIHdlaWdodHMgPSBOVUxMKSAjc3VjaHQgaW0gR3JhcGhlbiBuYWNoIEdydXBwZW5cblxuI3Bsb3QoY2ZnLCBnMSwgdmVydGV4LnNpemU9MTAsIHZlcnRleC5sYWJlbC5mb250PTIwLCBmYW1pbHk9XCJzZXJpZlwiLCBlZGdlLndpZHRoPUUoZzEpJHdlaWdodCwgc3ViPSBzdHJpbmdyOjpzdHJfYyhcIk1vZHVsYXJpdHk9XCIsbW9kdWxhcml0eShjZmcpKSkgI1plaWNobmV0IEdyYXBoZW4gc2FtdCBHcnVwcGllcnVuZ2VuXG5cbmdyb3VwIDwtIGFzLmZhY3RvcihtZW1iZXJzaGlwKGNmZykpXG5kYXRhJGdyb3VwIDwtIGdyb3VwXG5cbnJldHVybihsaXN0KGRhdGEsXG5wbG90KGNmZywgZzEsIHZlcnRleC5zaXplPTEwLCB2ZXJ0ZXgubGFiZWwuZm9udD0yMCwgZmFtaWx5PVwic2VyaWZcIiwgZWRnZS53aWR0aD1FKGcxKSR3ZWlnaHQsIHN1Yj0gc3RyaW5ncjo6c3RyX2MoXCJNb2R1bGFyaXR5PVwiLG1vZHVsYXJpdHkoY2ZnKSkpKSlcbn1cbmBgYCJ9 -->
+<pre class="r"><code>com_clust &lt;- function(data,variables = c(1:ncol(data)),weight= 1){
+adjmatrix &lt;- 1- daisy(data[,variables], metric = c(&quot;gower&quot;), weights = weight) # ungewichteter Vergleich, ausgenommen e0, e1, da nur ein auftreten überhaupt
+
+x &lt;- as.matrix(adjmatrix) #schreibt Aehnlichkeitsmatrix in ein R Objekt
+
+g1 &lt;- graph_from_adjacency_matrix(x, mode = c(&quot;lower&quot;), weighted = TRUE, diag = FALSE, add.colnames = NULL, add.rownames = NA) #erstellt Graphfile aus unterer H??lfte der Aehnlichkeitsmatrix
+
+cfg &lt;- cluster_louvain(g1, weights = NULL) #sucht im Graphen nach Gruppen
+
+#plot(cfg, g1, vertex.size=10, vertex.label.font=20, family=&quot;serif&quot;, edge.width=E(g1)$weight, sub= stringr::str_c(&quot;Modularity=&quot;,modularity(cfg))) #Zeichnet Graphen samt Gruppierungen
+
+group &lt;- as.factor(membership(cfg))
+data$group &lt;- group
+
+return(list(data,
+plot(cfg, g1, vertex.size=10, vertex.label.font=20, family=&quot;serif&quot;, edge.width=E(g1)$weight, sub= stringr::str_c(&quot;Modularity=&quot;,modularity(cfg)))))
+}</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Add a new chunk by clicking the <em>Insert Chunk</em> button on the toolbar or by pressing <em>Ctrl+Alt+I</em>.</p>
-<p>When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the <em>Preview</em> button or press <em>Ctrl+Shift+K</em> to preview the HTML file).</p>
-<p>The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike <em>Knit</em>, <em>Preview</em> does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.</p>
+<p>benötigte Pakete laden</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShSQ3VybClcbmBgYCJ9 -->
+<pre class="r"><code>library(RCurl)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Daten einlesen</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQ29ycHVzIDwtIHJlYWQuY3N2KGZpbGUgPSB4ICwgaGVhZGVyPSBUUlVFLCByb3cubmFtZXMgPSAxLCBzdHJpbmdzQXNGYWN0b3JzID0gRkFMU0UpXG5cbmBgYCJ9 -->
+<pre class="r"><code>Corpus &lt;- read.csv(file = x , header= TRUE, row.names = 1, stringsAsFactors = FALSE)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gaXNPcGVuKGZpbGUsIFwicnRcIikgOiBpbnZhbGlkIGNvbm5lY3Rpb25cbiJ9 -->
+<pre><code>Error in isOpen(file, &quot;rt&quot;) : invalid connection</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIlJlZ2lvbmFsZSBWYXJpYXRpb24gaW0gQWxsdGFnIOKAkyBLb29ra3VycmVuem11c3RlciB1bmQgaW50ZXJha3Rpb25hbGUgRnVua3Rpb25hbGlzaWVydW5nIg0Kb3V0cHV0OiBodG1sX25vdGVib29rDQotLS0NCg0KSW4gZGllc2VtIE5vdGVib29rIHdlcmRlbiBkaWUgRGF0ZW4gdW5kIEFuYWx5c2UgZsO8ciBkZW4gQXJ0aWtlbCAiUmVnaW9uYWxlIFZhcmlhdGlvbiBpbSBBbGx0YWctIEtvb2trdXJyZW56bXVzdGVyIHVuZCBpbnRlcmFrdGlvbmFsZSBGdW5rdGlvbmFsaXNpZXJ1bmciIA0KYGBge3J9DQpwbG90KGNhcnMpDQpgYGANCg0KQWRkIGEgbmV3IGNodW5rIGJ5IGNsaWNraW5nIHRoZSAqSW5zZXJ0IENodW5rKiBidXR0b24gb24gdGhlIHRvb2xiYXIgb3IgYnkgcHJlc3NpbmcgKkN0cmwrQWx0K0kqLg0KDQpXaGVuIHlvdSBzYXZlIHRoZSBub3RlYm9vaywgYW4gSFRNTCBmaWxlIGNvbnRhaW5pbmcgdGhlIGNvZGUgYW5kIG91dHB1dCB3aWxsIGJlIHNhdmVkIGFsb25nc2lkZSBpdCAoY2xpY2sgdGhlICpQcmV2aWV3KiBidXR0b24gb3IgcHJlc3MgKkN0cmwrU2hpZnQrSyogdG8gcHJldmlldyB0aGUgSFRNTCBmaWxlKS4NCg0KVGhlIHByZXZpZXcgc2hvd3MgeW91IGEgcmVuZGVyZWQgSFRNTCBjb3B5IG9mIHRoZSBjb250ZW50cyBvZiB0aGUgZWRpdG9yLiBDb25zZXF1ZW50bHksIHVubGlrZSAqS25pdCosICpQcmV2aWV3KiBkb2VzIG5vdCBydW4gYW55IFIgY29kZSBjaHVua3MuIEluc3RlYWQsIHRoZSBvdXRwdXQgb2YgdGhlIGNodW5rIHdoZW4gaXQgd2FzIGxhc3QgcnVuIGluIHRoZSBlZGl0b3IgaXMgZGlzcGxheWVkLg0K</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlJlZ2lvbmFsZSBWYXJpYXRpb24gaW0gQWxsdGFnIOKAkyBLb29ra3VycmVuem11c3RlciB1bmQgaW50ZXJha3Rpb25hbGUgRnVua3Rpb25hbGlzaWVydW5nIg0Kb3V0cHV0OiBodG1sX25vdGVib29rDQotLS0NCg0KSW4gZGllc2VtIE5vdGVib29rIHdlcmRlbiBkaWUgRGF0ZW4gdW5kIEFuYWx5c2UgZsO8ciBkZW4gQXJ0aWtlbCAiUmVnaW9uYWxlIFZhcmlhdGlvbiBpbSBBbGx0YWctIEtvb2trdXJyZW56bXVzdGVyIHVuZCBpbnRlcmFrdGlvbmFsZSBGdW5rdGlvbmFsaXNpZXJ1bmciIGRhcmdlc3RlbGx0Lg0KDQpGdW5rdGlvbmVuIGRlZmluaWVyZW4NCkNsdXN0ZXItVmVyZmFocmVuIChLYXAuIDQuMS4yKQ0KYGBge3J9DQpjb21fY2x1c3QgPC0gZnVuY3Rpb24oZGF0YSx2YXJpYWJsZXMgPSBjKDE6bmNvbChkYXRhKSksd2VpZ2h0PSAxKXsNCmFkam1hdHJpeCA8LSAxLSBkYWlzeShkYXRhWyx2YXJpYWJsZXNdLCBtZXRyaWMgPSBjKCJnb3dlciIpLCB3ZWlnaHRzID0gd2VpZ2h0KSAjIHVuZ2V3aWNodGV0ZXIgVmVyZ2xlaWNoLCBhdXNnZW5vbW1lbiBlMCwgZTEsIGRhIG51ciBlaW4gYXVmdHJldGVuIMO8YmVyaGF1cHQNCg0KeCA8LSBhcy5tYXRyaXgoYWRqbWF0cml4KSAjc2NocmVpYnQgQWVobmxpY2hrZWl0c21hdHJpeCBpbiBlaW4gUiBPYmpla3QNCg0KZzEgPC0gZ3JhcGhfZnJvbV9hZGphY2VuY3lfbWF0cml4KHgsIG1vZGUgPSBjKCJsb3dlciIpLCB3ZWlnaHRlZCA9IFRSVUUsIGRpYWcgPSBGQUxTRSwgYWRkLmNvbG5hbWVzID0gTlVMTCwgYWRkLnJvd25hbWVzID0gTkEpICNlcnN0ZWxsdCBHcmFwaGZpbGUgYXVzIHVudGVyZXIgSD8/bGZ0ZSBkZXIgQWVobmxpY2hrZWl0c21hdHJpeA0KDQpjZmcgPC0gY2x1c3Rlcl9sb3V2YWluKGcxLCB3ZWlnaHRzID0gTlVMTCkgI3N1Y2h0IGltIEdyYXBoZW4gbmFjaCBHcnVwcGVuDQoNCiNwbG90KGNmZywgZzEsIHZlcnRleC5zaXplPTEwLCB2ZXJ0ZXgubGFiZWwuZm9udD0yMCwgZmFtaWx5PSJzZXJpZiIsIGVkZ2Uud2lkdGg9RShnMSkkd2VpZ2h0LCBzdWI9IHN0cmluZ3I6OnN0cl9jKCJNb2R1bGFyaXR5PSIsbW9kdWxhcml0eShjZmcpKSkgI1plaWNobmV0IEdyYXBoZW4gc2FtdCBHcnVwcGllcnVuZ2VuDQoNCmdyb3VwIDwtIGFzLmZhY3RvcihtZW1iZXJzaGlwKGNmZykpDQpkYXRhJGdyb3VwIDwtIGdyb3VwDQoNCnJldHVybihsaXN0KGRhdGEsDQpwbG90KGNmZywgZzEsIHZlcnRleC5zaXplPTEwLCB2ZXJ0ZXgubGFiZWwuZm9udD0yMCwgZmFtaWx5PSJzZXJpZiIsIGVkZ2Uud2lkdGg9RShnMSkkd2VpZ2h0LCBzdWI9IHN0cmluZ3I6OnN0cl9jKCJNb2R1bGFyaXR5PSIsbW9kdWxhcml0eShjZmcpKSkpKQ0KfQ0KYGBgDQpiZW7DtnRpZ3RlIFBha2V0ZSBsYWRlbg0KYGBge3J9DQpsaWJyYXJ5KFJDdXJsKQ0KYGBgDQoNCkRhdGVuIGVpbmxlc2VuDQpgYGB7cn0NCnggPC0gY3VybDo6Y3VybCh1cmw9Imh0dHBzOi8vcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbS9UaW1vU2NodWVyL1JlZ2lvbmFsZVZhcmlhdGlvbkltQWxsdGFnL21hc3Rlci9EYXRhLmNzdiIpDQpDb3JwdXMgPC0gcmVhZC5jc3YoZmlsZSA9IHggLCBoZWFkZXI9IFRSVUUsIHJvdy5uYW1lcyA9IDEsIHN0cmluZ3NBc0ZhY3RvcnMgPSBGQUxTRSkNCmBgYA0KDQo=</div>
 
 
 

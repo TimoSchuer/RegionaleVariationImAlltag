@@ -3,13 +3,37 @@ title: "Regionale Variation im Alltag – Kookkurrenzmuster und interaktionale F
 output: html_notebook
 ---
 
-In diesem Notebook werden die Daten und Analyse für den Artikel "Regionale Variation im Alltag- Kookkurrenzmuster und interaktionale Funktionalisierung" 
+In diesem Notebook werden die Daten und Analyse für den Artikel "Regionale Variation im Alltag- Kookkurrenzmuster und interaktionale Funktionalisierung" dargestellt.
+
+Funktionen definieren
+Cluster-Verfahren (Kap. 4.1.2)
 ```{r}
-plot(cars)
+com_clust <- function(data,variables = c(1:ncol(data)),weight= 1){
+adjmatrix <- 1- daisy(data[,variables], metric = c("gower"), weights = weight) # ungewichteter Vergleich, ausgenommen e0, e1, da nur ein auftreten überhaupt
+
+x <- as.matrix(adjmatrix) #schreibt Aehnlichkeitsmatrix in ein R Objekt
+
+g1 <- graph_from_adjacency_matrix(x, mode = c("lower"), weighted = TRUE, diag = FALSE, add.colnames = NULL, add.rownames = NA) #erstellt Graphfile aus unterer H??lfte der Aehnlichkeitsmatrix
+
+cfg <- cluster_louvain(g1, weights = NULL) #sucht im Graphen nach Gruppen
+
+#plot(cfg, g1, vertex.size=10, vertex.label.font=20, family="serif", edge.width=E(g1)$weight, sub= stringr::str_c("Modularity=",modularity(cfg))) #Zeichnet Graphen samt Gruppierungen
+
+group <- as.factor(membership(cfg))
+data$group <- group
+
+return(list(data,
+plot(cfg, g1, vertex.size=10, vertex.label.font=20, family="serif", edge.width=E(g1)$weight, sub= stringr::str_c("Modularity=",modularity(cfg)))))
+}
+```
+benötigte Pakete laden
+```{r}
+library(RCurl)
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+Daten einlesen
+```{r}
+x <- curl::curl(url="https://raw.githubusercontent.com/TimoSchuer/RegionaleVariationImAlltag/master/Data.csv")
+Corpus <- read.csv(file = x , header= TRUE, row.names = 1, stringsAsFactors = FALSE)
+```
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
-
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
